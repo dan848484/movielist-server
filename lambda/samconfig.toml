@@ -1,0 +1,10 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "PythonLambda"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-174cbg36i95hc"
+s3_prefix = "PythonLambda"
+region = "ap-northeast-1"
+capabilities = "CAPABILITY_IAM"
+image_repositories = ["HelloWorldFunction=862214078536.dkr.ecr.ap-northeast-1.amazonaws.com/pythonlambdaa8137a98/helloworldfunction19d43fc4repo"]

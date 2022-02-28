@@ -1,0 +1,3 @@
+lambda/.aws-sam
+lambda/tests/
+lambda/events.json
