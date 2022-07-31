@@ -1,7 +1,6 @@
 from decimal import Decimal
 import json
 from typing import Any, Dict, List, cast
-import boto3
 from MovieType import Movie
 import Add
 import Delete

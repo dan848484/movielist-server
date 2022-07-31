@@ -2,7 +2,6 @@ from decimal import Decimal
 import json
 from typing import cast
 import boto3
-from MovieType import Movie
 
 
 def lambda_handler(event, context):

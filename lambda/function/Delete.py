@@ -15,4 +15,5 @@ def lambda_handler(event, context):
     return {
         "statusCode": 200,
         "body": "deleted: " + query["id"],
+        # "body": "test",
     }

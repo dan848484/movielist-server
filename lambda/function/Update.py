@@ -1,7 +1,9 @@
-from typing import Union
+from decimal import Decimal
+from typing import Union,cast
 import boto3
 from distutils.util import strtobool
-
+import json
+from MovieType import Movie
 
 def lambda_handler(event, context):
 
@@ -34,8 +36,12 @@ def lambda_handler(event, context):
         ExpressionAttributeValues={":val": value},
         ExpressionAttributeNames={"#type": type},
     )
-
+    
+    updatedItem = table.get_item(Key={
+        'id':query["id"],
+    })["Item"] 
+    updatedItem["addedDate"] = int(cast(Decimal,updatedItem["addedDate"]))
     return {
         "statusCode": 200,
-        "body": "changed " + type + " to " + query["id"],
+        "body": json.dumps(updatedItem)
     }

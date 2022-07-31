@@ -3,6 +3,7 @@ import boto3
 from MovieType import Movie
 import uuid
 import datetime
+import json
 
 
 def lambda_handler(event, context):
@@ -10,7 +11,7 @@ def lambda_handler(event, context):
     table = dynamodb.Table("movielist-app")
     query = event["queryStringParameters"]
     if not query or "name" not in query:
-        return {"statusCode": 400, "body": "query are not valid・いええええ"}
+        return {"statusCode": 400, "body": "query are not valid"}
 
     newItem: Movie = {
         "id": str(uuid.uuid4()),
@@ -18,10 +19,11 @@ def lambda_handler(event, context):
         "addedDate": int(datetime.datetime.today().timestamp()),
         "watched": False,
     }
-
+    print(query)
     response = table.put_item(Item=cast(Mapping[str, Union[int, bool, str]], newItem))
 
     return {
         "statusCode": 200,
-        "body": "added: " + query["name"],
+        "body": json.dumps(newItem),
+       
     }
