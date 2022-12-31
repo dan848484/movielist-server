@@ -1,27 +1,105 @@
 from decimal import Decimal
-import json
-from typing import Any, Dict, List, cast
-import boto3
+from json import dumps, loads
+from typing import Mapping, Union, cast
 from MovieType import Movie
-import Add
-import Delete
-import Items
-import Update
-
+import uuid
+import datetime
+from distutils.util import strtobool
+import boto3
+import traceback
 
 def lambda_handler(event, context):
-    operation: str = event["pathParameters"]["operation"]
-    operationFunctions = {
-        "items": Items.lambda_handler,
-        "add": Add.lambda_handler,
-        "delete": Delete.lambda_handler,
-        "update": Update.lambda_handler,
+    method:str = event['httpMethod']
+    response:object = None
+    try:
+        if method == "GET":
+            response = get_movies(event,context)
+        elif method == "POST":
+            response = add_movie(event,context)
+        elif method == "PUT":
+            response = update_movie(event,context)
+        elif  method == 'DELETE':
+            response = delete_movie(event,context)   
+        return {
+            'statusCode':200,
+            'body':dumps(response)
+        }
+    except EmptyBodyError as ex:
+        print(traceback.format_exc())
+        return {
+            'statusCode':400,
+            'body':ex.__str__()
+        }
+    except Exception as ex:
+        print(traceback.format_exc())
+        return {
+            'statusCode':500,
+            'body':ex.__str__()
+        }
+    
+
+def get_movies(event, context):
+    dynamodb = boto3.resource("dynamodb")
+    table = dynamodb.Table("movielist-app")
+    response = table.scan()
+    data = response["Items"]
+    while "LastEvaluatedKey" in response:
+        response = table.scan(ExclusiveStartKey=response["LastEvaluatedKey"])
+        data.extend(response["Items"])
+
+    for m in data:
+        m["addedDate"] = int(cast(Decimal, m["addedDate"]))
+
+    return data
+
+def add_movie(event, context):
+    dynamodb = boto3.resource("dynamodb")
+    table = dynamodb.Table("movielist-app")
+    body:Movie = loads(event['body'])
+    print(type(body))
+    if body is None:
+        raise EmptyBodyError()
+    newItem: Movie = {
+        "id": str(uuid.uuid4()),
+        "name": body['name'],
+        "addedDate": int(datetime.datetime.today().timestamp()),
+        "watched": False,
     }
-    response = None
+    table.put_item(Item=cast(Mapping[str, Union[int, bool, str]], newItem))
+    return newItem
 
-    for o in operationFunctions:
-        if o == operation:
-            response = operationFunctions[o](event, context)
-            break
+def update_movie(event, context):
+    dynamodb = boto3.resource("dynamodb")
+    table = dynamodb.Table("movielist-app")
+    body:Movie = loads(event['body'])
+    if body is None:
+        raise EmptyBodyError()
+    table.update_item(
+        Key={"id": body["id"]},
+        UpdateExpression="SET #movie_name = :movie_name, addedDate = :date, watched = :watched",
+        ExpressionAttributeValues={
+            ":movie_name": body['name'],
+            ":date":body['addedDate'],
+            ":watched":True if strtobool(str(body["watched"])) else False
+        },
+        ExpressionAttributeNames={
+            '#movie_name':'name'
+        }
+    )
+    updatedItem = table.get_item(Key={
+        'id':body["id"],
+    })["Item"] 
+    updatedItem["addedDate"] = int(cast(Decimal,updatedItem["addedDate"]))
+    return updatedItem
 
-    return response
+
+def delete_movie(event, context):
+    dynamodb = boto3.resource("dynamodb")
+    table = dynamodb.Table("movielist-app")
+    id: str = event["pathParameters"]["id"]
+    table.delete_item(Key={"id": id})
+    return None
+
+class EmptyBodyError(Exception):
+    def __init__(self):
+        super().__init__("Bodyがありません。")

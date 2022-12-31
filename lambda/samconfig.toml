@@ -2,9 +2,9 @@ version = 0.1
 [default]
 [default.deploy]
 [default.deploy.parameters]
-stack_name = "PythonLambda"
+stack_name = "Movielist"
 s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-174cbg36i95hc"
-s3_prefix = "PythonLambda"
+s3_prefix = "Movielist"
 region = "ap-northeast-1"
 capabilities = "CAPABILITY_IAM"
-image_repositories = ["HelloWorldFunction=862214078536.dkr.ecr.ap-northeast-1.amazonaws.com/pythonlambdaa8137a98/helloworldfunction19d43fc4repo"]
+image_repositories = ["MovielistFunction=862214078536.dkr.ecr.ap-northeast-1.amazonaws.com/movielist98b419b0/movielistfunctionfa285e3brepo"]
