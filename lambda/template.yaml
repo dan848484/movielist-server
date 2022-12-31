@@ -33,14 +33,26 @@ Resources:
         getEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /{operation}/
+            Path: /movies/
             Method: get
             RestApiId: !Ref ApiGateway
         postEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /{operation}/
+            Path: /movies/
             Method: post
+            RestApiId: !Ref ApiGateway
+        putEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /movies/
+            Method: put
+            RestApiId: !Ref ApiGateway
+        deleteEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /movies/{id}
+            Method: delete
             RestApiId: !Ref ApiGateway
     Metadata:
       Dockerfile: Dockerfile
