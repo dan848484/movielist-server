@@ -7,9 +7,10 @@ import datetime
 from distutils.util import strtobool
 import boto3
 from mypy_boto3_dynamodb import ServiceResource
+from typing import  Optional
 
 def lambda_handler(event, context):
-    method:str = event['httpMethod']
+    method:str = event['httpMethod']    
     response:object = None
     try:
         if method == "GET":
@@ -37,18 +38,30 @@ def lambda_handler(event, context):
     
 
 def get_movies(event, context):
-    dynamodb = boto3.resource("dynamodb")
+    dynamodb:ServiceResource = boto3.resource("dynamodb")
     table = dynamodb.Table("movielist-app")
     response = table.scan()
+    id:Optional[str] = None
+    if event['pathParameters']:
+       id =  event['pathParameters']['id']
     data = response["Items"]
-    while "LastEvaluatedKey" in response:
-        response = table.scan(ExclusiveStartKey=response["LastEvaluatedKey"])
-        data.extend(response["Items"])
+    if id:
+        response = table.get_item(
+            Key={
+                'id':id
+            }
+        )
+        data = [response["Item"]]
+    else:
+        while "LastEvaluatedKey" in response:
+            response = table.scan(ExclusiveStartKey=response["LastEvaluatedKey"])
+            data.extend(response["Items"])
+         
 
     for m in data:
         m["addedDate"] = int(cast(Decimal, m["addedDate"]))
 
-    return data
+    return data[0] if id else data
 
 def add_movie(event, context):
     dynamodb:ServiceResource = boto3.resource("dynamodb")

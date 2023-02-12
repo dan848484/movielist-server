@@ -30,10 +30,16 @@ Resources:
       Architectures:
         - x86_64
       Events:
-        getEvent:
+        getAllEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Path: /movies/
+            Method: get
+            RestApiId: !Ref ApiGateway
+        getEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /movies/{id}
             Method: get
             RestApiId: !Ref ApiGateway
         postEvent:
