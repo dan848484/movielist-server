@@ -6,7 +6,7 @@ import uuid
 import datetime
 from distutils.util import strtobool
 import boto3
-import traceback
+from mypy_boto3_dynamodb import ServiceResource
 
 def lambda_handler(event, context):
     method:str = event['httpMethod']
@@ -25,13 +25,11 @@ def lambda_handler(event, context):
             'body':dumps(response)
         }
     except EmptyBodyError as ex:
-        print(traceback.format_exc())
         return {
             'statusCode':400,
             'body':ex.__str__()
         }
     except Exception as ex:
-        print(traceback.format_exc())
         return {
             'statusCode':500,
             'body':ex.__str__()
@@ -53,7 +51,7 @@ def get_movies(event, context):
     return data
 
 def add_movie(event, context):
-    dynamodb = boto3.resource("dynamodb")
+    dynamodb:ServiceResource = boto3.resource("dynamodb")
     table = dynamodb.Table("movielist-app")
     body:Movie = loads(event['body'])
     print(type(body))
@@ -69,7 +67,7 @@ def add_movie(event, context):
     return newItem
 
 def update_movie(event, context):
-    dynamodb = boto3.resource("dynamodb")
+    dynamodb:ServiceResource = boto3.resource("dynamodb")
     table = dynamodb.Table("movielist-app")
     body:Movie = loads(event['body'])
     if body is None:
@@ -94,7 +92,7 @@ def update_movie(event, context):
 
 
 def delete_movie(event, context):
-    dynamodb = boto3.resource("dynamodb")
+    dynamodb:ServiceResource = boto3.resource("dynamodb")
     table = dynamodb.Table("movielist-app")
     id: str = event["pathParameters"]["id"]
     table.delete_item(Key={"id": id})
